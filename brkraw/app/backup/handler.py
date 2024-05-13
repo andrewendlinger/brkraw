@@ -1,7 +1,7 @@
 import os
 from brkraw.app.tonifti import StudyToNifti
-from brkraw.api.config.utils.functools import get_dirsize, \
-    get_filesize, yes_or_no, print_internal_error, TimeCounter
+from xnippet.formatter import IOFormatter, BytesFormatter
+from xnippet.utils import TimeCounter
 import sys
 import datetime
 import tqdm
@@ -207,7 +207,7 @@ class BackupCacheHandler:
                 else:
                     path_name = r.path
                 raw_path = os.path.join(self._rpath, r.path)
-                dir_size, unit = get_dirsize(raw_path)
+                dir_size, unit = BytesFormatter.get_dirsize(raw_path)
                 if unit == 'B':
                     dir_size = '{} {}'.format(dir_size, unit).rjust(10)
                 else:
@@ -231,7 +231,7 @@ class BackupCacheHandler:
                 else:
                     path_name = b.path
                 arc_path = os.path.join(self._apath, b.path)
-                file_size, unit = get_filesize(arc_path)
+                file_size, unit = BytesFormatter.get_filesize(arc_path)
                 if b.crashed:
                     raw_path = self.get_rpath_obj(b.path, by_arc=True).path
                     if raw_path is None:
@@ -319,7 +319,7 @@ class BackupCacheHandler:
         print('\n[Warning] The archived data that contains any issue will be deleted by this command '
               'and it cannot be revert.')
         print('          Prior to run this, please update the cache for data status using "review" function.\n')
-        ans = yes_or_no('Are you sure to continue?')
+        ans = IOFormatter.ask_yes_or_no('Are you sure to continue?')
 
         if ans:
             list_data = dict(issued=self.get_issued()[:],
@@ -334,7 +334,7 @@ class BackupCacheHandler:
                             if raw_dname != None:
                                 raw_path = os.path.join(self._rpath, raw_dname)
                                 if os.path.exists(raw_path):
-                                    r_size, r_unit = get_dirsize(raw_path)
+                                    r_size, r_unit = BytesFormatter.get_dirsize(raw_path)
                                     r_size = '{0:.2f} {1}'.format(r_size, r_unit)
                                 else:
                                     r_size = 'Removed'
@@ -349,7 +349,7 @@ class BackupCacheHandler:
                             print('\n'.join(dup_list).format(*arcs))
                             for arc_fname in arcs:
                                 path_to_clean = os.path.join(self._apath, arc_fname)
-                                ans_4rm = yes_or_no(' - Are you sure to remove [{}] ?\n  '.format(arc_fname))
+                                ans_4rm = IOFormatter.ask_yes_or_no(' - Are you sure to remove [{}] ?\n  '.format(arc_fname))
                                 if ans_4rm:
                                     try:
                                         os.remove(path_to_clean)
@@ -367,7 +367,7 @@ class BackupCacheHandler:
                         print('\nStart removing {} archived data...'.format(label.upper()))
 
                         def ask_to_remove():
-                            ans_4rm = yes_or_no(' - Are you sure to remove [{}] ?\n  '.format(path_to_clean))
+                            ans_4rm = IOFormatter.ask_yes_or_no(' - Are you sure to remove [{}] ?\n  '.format(path_to_clean))
                             if ans_4rm:
                                 try:
                                     os.remove(path_to_clean)
@@ -457,7 +457,7 @@ class BackupCacheHandler:
                             print(' - [{}] is created.'.format(os.path.basename(arc_path)), file=fobj)
 
                         except Exception:
-                            print_internal_error(fobj)
+                            IOFormatter.print_internal_error(fobj)
                             error = NotImplementedError(raw_path)
                             self.logging(error.message, 'backup')
                             raise error
@@ -473,5 +473,5 @@ class BackupCacheHandler:
                             try:
                                 os.rename(tmp_path, arc_path)
                             except:
-                                print_internal_error(fobj)
+                                IOFormatter.print_internal_error(fobj)
                                 raise NotImplementedError

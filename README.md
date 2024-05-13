@@ -1,38 +1,31 @@
 [![DOI](https://zenodo.org/badge/245546149.svg)](https://zenodo.org/badge/latestdoi/245546149)
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)](https://www.python.org/)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/BrkRaw/tutorials/master)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/BrkRaw/tutorials/main)
 
-## BrkRaw: A comprehensive tool to access raw Bruker Biospin MRI data
-#### Version: 0.3.11
+## BrkRaw: A Comprehensive and Extensible Converter for Bruker Paravision Datasets
+#### Version: 0.4.0a1
 ### Description
 
-The ‘BrkRaw’ is a python module designed to provide a comprehensive tool to access raw data acquired from 
-Bruker Biospin preclinical MRI scanner. This module is also compatible with the zip compressed data 
-to enable use of the archived data directly.  
-The module is comprised of four components, including graphical user interface (GUI), command-line tools, 
-high-level and low-level python APIs.
-- For the GUI, we focused on improving convenience for checking metadata and previewing the reconstructed image.
-- For the command-line tool, we focused on providing tools for converting, organizing, archiving, and managing data.
-The command-line tool also provides easy-to-use function to convert large set of raw data into organized structure
-according to [BIDS](https://bids.neuroimaging.io).
-- For the high-level python API, we focused on enhancing the accessibility of reconstructed image data with 
-preserved image orientation and metadata for the image analysis. 
-It compatible users' convenient objects type ([nibabel](https://nipy.org/nibabel/) or 
-[SimpleITK](https://simpleitk.readthedocs.io/en/master/gettingStarted.html#python-binary-files)) 
-without the conversion step. 
-- For the low-level python API, we focused on providing a consistent method to access raw Bruker data including 
-parameter and binary files with the python compatible datatype while keeping the sake of simplicity.
+BrkRaw is a Python module designed to efficiently handle raw Bruker Paravision datasets from Biospin preclinical MRI scanners. 
+It simplifies the conversion of images to the Nifti1 format, which is widely recognized by analysis software, 
+and ensures compliance with the [BIDS standard](https://bids-specification.readthedocs.io/en/stable/). 
+BrkRaw features a robust metadata parser and supports custom extensions, 
+allowing users to add new functionalities seamlessly without modifying the existing codebase.
 
-#### Conversion reliability
-![Robust Orientation](imgs/bruker2nifti_qa.png)
-We've tested our converter using the sample dataset from [Bruker2Nifti_QA](https://gitlab.com/naveau/bruker2nifti_qa) 
-and the results showed correct geometry and orientation for all datasets.
-We are still looking for more datasets showing orientation issue, 
-**if you have any shareable dataset, please contact the developer.**
+The module encompasses four primary applications:
+- **tonifti**: The key module for conversion, currently the only active app in this alpha testing phase.
+- **backup**: Designed for data archiving, to be integrated atop tonifti to maintain integrity.
+- **bids**: A semi-automated converter that transforms multiple raw datasets into a complete BIDS-compliant structure with the aid of simple datasheets and recipes.
+- **viewer**: A straightforward graphical user interface that allows for the viewing of raw data and metadata without conversion.
+
+> **Please Note**: In the current pre-release version undergoing alpha testing, only the tonifti application is activated for testing purposes. 
+Future updates will enable the backup, bids, and viewer features, all integrated within the tonifti framework to ensure cohesive functionality across the built-in applications.
+If you are looking for a fully functional version, please refer to the [`release 0.3.11`](https://github.com/BrkRaw/brkraw/tree/0.3.11-post1).
+
 
 ### Website
-For more detail information including installation, usage and examples, 
-please visit our [GitPage](https://brkraw.github.io).
+
+For detailed information including installation, usage examples, and more, please visit our [GitPage](https://brkraw.github.io):
 
 - [Installation](https://brkraw.github.io/docs/gs_inst.html)
 - [Command-line tool usage examples](https://brkraw.github.io/docs/gs_nii.html)
@@ -41,47 +34,19 @@ please visit our [GitPage](https://brkraw.github.io).
 - [GUI](https://brkraw.github.io/docs/gs_gui.html)
 - [Interactive Tutorial](https://mybinder.org/v2/gh/BrkRaw/tutorials/ac95b2c87b05664cb678c5dc1a930641397130ed)
 
+> **Please Note**: The current documents are outdated and are in the process of being updated. We appreciate your patience and encourage you to check back soon for the most recent information.
 
-### Credits:
-##### Authors
-- SungHo Lee (shlee@unc.edu): main developer
-- Woomi Ban (banwoomi@unc.edu): sub-developer who tested and refined the module structure
-- Jaiden Dumas: proofreading of documents and update contents for the user community.
-- Dr. Gabriel A. Devenyi: The vast contributions to refinement of module functionality and troubleshooting.
-- Yen-Yu Ian Shih (shihy@neurology.unc.edu): technical and academical advisory on this project (as well as funding)
-##### Contributors
-- Drs. Chris Rorden and Sebastiano Ferraris: The pioneers related this project who had been inspired the developer
- through their great tools including [dcm2niix](https://github.com/rordenlab/dcm2niix) and 
- [bruker2nifti](https://github.com/SebastianoF/bruker2nifti), as well as their comments to improve this project. 
-- Dr. Mikael Naveau: The publisher of 
-[bruker2nifti_qa](https://gitlab.com/naveau/bruker2nifti_qa), the set of data 
-to help benchmark testing of Bruker converter.
+### Acknowledgements
+We are grateful to all the contributors who have played a significant role in the development and advancement of this project. For a detailed list of acknowledgements, please refer to our [Acknowledgements page](ACKNOWLEDGEMENTS.md).
 
 
-### License:
-GNU General Public License v3.0
+### License
+This project is licensed under the GNU General Public License v3.0. For more details, please see the [GPLv3 License](LICENSE).
 
-### How to get Support
-If you are experiencing any problem or have questions, please report it through 
-[Issues](https://github.com/BrkRaw/bruker/issues)
+### Contributing
 
-### Citing BrkRaw
-Lee, Sung-Ho, Ban, Woomi, & Shih, Yen-Yu Ian. (2020, June 4). BrkRaw/bruker: BrkRaw v0.3.3 (Version 0.3.3). 
-Zenodo. http://doi.org/10.5281/zenodo.3877179
+We welcome contributions from the community. For guidelines on how to get involved, please refer to our [Contributing Guidelines](CONTRIBUTING.md).
 
+### Citation
 
-**BibTeX**
-```
-@software{lee_sung_ho_2020_3907018,
-  author       = {Lee, Sung-Ho and
-                  Ban, Woomi and
-                  Shih, Yen-Yu Ian},
-  title        = {BrkRaw/bruker: BrkRaw v0.3.4},
-  month        = jun,
-  year         = 2020,
-  publisher    = {Zenodo},
-  version      = {0.3.4},
-  doi          = {10.5281/zenodo.3907018},
-  url          = {https://doi.org/10.5281/zenodo.3907018}
-}
-```
+If you use BrkRaw in your research, please cite it using the information provided in our [Citation Guide](CITATION.md).

@@ -11,7 +11,7 @@ from brkraw.api import helper
 from .base import BaseAnalyzer
 from typing import TYPE_CHECKING, Optional, Union
 if TYPE_CHECKING:
-    from ..pvobj import PvScan, PvReco, PvFiles
+    from brkraw.api.pvobj import PvScan, PvReco, PvFiles
 
 
 class ScanInfoAnalyzer(BaseAnalyzer):
@@ -54,12 +54,6 @@ class ScanInfoAnalyzer(BaseAnalyzer):
                 vals = OrderedDict()
             setattr(self, p, vals)
         try:
-            fid_buffer = pvobj.get_fid()
-        except (FileNotFoundError, AttributeError):
-            fid_buffer = None
-        setattr(self, 'fid_buffer', fid_buffer)
-
-        try:
             visu_pars = pvobj.get_visu_pars(reco_id)
         except (FileNotFoundError, AttributeError):
             visu_pars = OrderedDict()
@@ -68,6 +62,7 @@ class ScanInfoAnalyzer(BaseAnalyzer):
     def _parse_info(self):
         """Parse and process detailed information from the visualization parameters and other sources.
         """
+        self.info_seqparams = helper.SeqParams(self).get_info()
         self.info_dataarray = helper.DataArray(self).get_info()
         self.info_frame_group = helper.FrameGroup(self).get_info()
         self.info_image = helper.Image(self).get_info()

@@ -211,17 +211,21 @@ class BaseMethods(BaseBufferHandler):
             param = obj.some_key  # Returns a Parameter object or file object.
         """
         key = key[1:] if key.startswith('_') else key 
-        
-        if file := [f for f in self.contents['files'] if (f == key or f.replace('.', '_') == key)]:
-            fileobj = self._open_as_fileobject(file.pop())
-            if self._is_binary(fileobj):
-                return fileobj
-            string_list = fileobj.read().decode('UTF-8').split('\n')
-            fileobj.close()
-            par = Parameter(string_list, 
-                            name=key, scan_id=self._scan_id, reco_id=self._reco_id)
-            return par if par.is_parameter() else string_list
-        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{key}'")
+        if self.contents:
+            if file := [f for f in self.contents['files'] if (f == key or f.replace('.', '_') == key)]:
+                fileobj = self._open_as_fileobject(file.pop())
+                if self._is_binary(fileobj):
+                    return fileobj
+                string_list = fileobj.read().decode('UTF-8').split('\n')
+                fileobj.close()
+                par = Parameter(string_list, 
+                                name=key, scan_id=self._scan_id, reco_id=self._reco_id)
+                return par if par.is_parameter() else string_list
+            raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{key}'")
+        else:
+            raise LookupError(f"'{self._path}' does not contain any compatible contents; therefore, cannot find attributes '{key}'. "
+                              "It is expected to be a modified dataset, which is not compatible with BrkRaw.")
+
 
     @property
     def contents(self):

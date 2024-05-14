@@ -1,12 +1,9 @@
 cff-version: 1.2.0
-
-title: "brkraw"
-
-version: "0.3.10"
-
+message: "If you use this software in your work, please cite it using the following metadata"
+title: "BrkRaw: A Comprehensive and Extensible Converter for Bruker Paravision Datasets"
+version: "0.4.0"
+date-released: 2024-05
 abstract: Bruker PvDataset Loader
-
-message: "If you use this software, please cite it as below."
 
 repository-code: "https://github.com/BrkRaw/brkraw"
 
@@ -24,20 +21,30 @@ authors:
   - email: shlee@unc.edu
     family-names: SungHo 
     given-names: Lee
+    orcid: "https://orcid.org/0000-0001-5292-0747"
 
   - email: banwoomi@unc.edu
     family-names: Woomi  
     given-names: Ban
+    orcid: "https://orcid.org/0000-0003-2003-717X"
 
   - family-names: Dumas 
     given-names: Jaiden
+    orcid: "https://orcid.org/0000-0002-1411-1954"
+
+  - email: jbt5jf@virginia.edu
+    family-names: Ho
+    given-names: Timothy
+    orcid: ""
 
   - family-names: Devenyi 
     given-names: Gabriel A.
+    orcid: "https://orcid.org/0000-0002-7766-1187"
 
   - email: shihy@neurology.unc.edu
     family-names: Yen-Yu
     given-names: Ian Shih
+    orcid: "https://orcid.org/0000-0001-6529-911X"
 
 license: GPL-3.0
 

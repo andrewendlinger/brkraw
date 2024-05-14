@@ -212,8 +212,8 @@ class Parameter:
         """
         return self.parameters.items()
     
-    def get(self, key: str):
-        """Get the value of a parameter by key, returning None if the key is not found.
+    def get(self, key: str, default=None):
+        """Get the value of a parameter by key, returning default if the key is not found.
 
         Args:
             key (str): The key for the desired parameter.
@@ -224,7 +224,7 @@ class Parameter:
         if key in self.keys():
             return self.parameters[key]
         else:
-            return None
+            return default
         
     def is_parameter(self):
         """True if data successfully loaded"""

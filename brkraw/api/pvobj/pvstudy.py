@@ -130,6 +130,10 @@ class PvStudy(BaseMethods):
             if 'subject' in contents['files']:
                 return contents
 
+    @property
+    def is_pvstudy(self):
+        return True if self.contents else False
+
     def _clear_contents(self, to_be_removed):
         """Clears specified contents from the dataset's memory structure.
 

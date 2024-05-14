@@ -49,4 +49,4 @@ We welcome contributions from the community. For guidelines on how to get involv
 
 ### Citation
 
-If you use BrkRaw in your research, please cite it using the information provided in our [Citation Guide](CITATION.md).
+If you use BrkRaw in your research, please cite it according to the information provided in our [CITATION.cff file](CITATION.cff).

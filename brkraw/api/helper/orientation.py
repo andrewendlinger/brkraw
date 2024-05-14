@@ -71,7 +71,6 @@ class Orientation(BaseHelper):
         self._position = visu_pars["VisuCorePosition"]
         self._set_gradient_orient(analobj)
         self.num_slice_packs = info_slicepack['num_slice_packs']
-        self.gradient_encoding_dir = self._get_gradient_encoding_dir(visu_pars)
         
         self.orientation = []
         self.orientation_desc = []
@@ -240,29 +239,3 @@ class Orientation(BaseHelper):
         return np.array([math.degrees(x),
                          math.degrees(y),
                          math.degrees(z)])
-    
-    @classmethod
-    def _get_gradient_encoding_dir(cls, visu_pars):
-        if visu_pars["VisuVersion"] != 1:
-            return visu_pars["VisuAcqGradEncoding"]
-        # routine for PV version < 6
-        phase_enc = visu_pars["VisuAcqImagePhaseEncDir"]
-        phase_enc = phase_enc[0] if is_all_element_same(phase_enc) else phase_enc
-        return (
-            [cls._decode_encdir(p) for p in phase_enc] \
-                if isinstance(phase_enc, list) and len(phase_enc) > 1 \
-                else cls._decode_encdir(phase_enc)
-        )
-    
-    @staticmethod
-    def _decode_encdir(enc_param):
-        if enc_param == 'col_dir':
-            return ['read_enc', 'phase_enc']
-        elif enc_param == 'row_dir':
-            return ['phase_enc', 'read_enc']
-        elif enc_param == 'col_slice_dir':
-            return ['read_enc', 'phase_enc', 'slice_enc']
-        elif enc_param == 'row_slice_dir':
-            return ['phase_enc', 'read_enc', 'slice_enc']
-        else:
-            raise NotImplementedError

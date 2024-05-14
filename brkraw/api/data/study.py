@@ -24,26 +24,29 @@ This module is utilized in MRI research environments where detailed and structur
 """
 
 from __future__ import annotations
+import re
 import os
 import yaml
 import warnings
 from copy import copy
 from pathlib import Path
+from collections import OrderedDict
 from dataclasses import dataclass
+from reshipe import RecipeParser
 from .scan import Scan
-from brkraw import config
 from brkraw.api.pvobj import PvStudy
 from brkraw.api.analyzer.base import BaseAnalyzer
-from reshipe import RecipeParser
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from typing import Optional
+    from typing import Optional, Literal, Union
+    from typing import OrderedDict as OrderedDictType, List
+    from brkraw.api.pvobj import Parameter
 
 
 @dataclass
 class StudyHeader:
     header: dict
-    scans: list
+    scans: dict
     
     
 @dataclass
@@ -69,15 +72,20 @@ class Study(PvStudy, BaseAnalyzer):
     Attributes:
         header (Optional[dict]): Parsed study header information.
     """
-    _info: StudyHeader
+    _spec: Optional[dict] = None
+    _info: Optional[StudyHeader] = None
+    _streamed_info: Optional[OrderedDictType] = None
+    header: Optional[OrderedDictType] = None
+    study_ref: Optional[Parameter] = None
     
-    def __init__(self, path: Path) -> None:
+    def __init__(self, path: Path, spec_path: Union[Path, str, None] = None) -> None:
         """Initializes the Study object with a specified path.
 
         Args:
             path (Path): The file system path to the study data.
         """
         super().__init__(self._resolve(path))
+        self._import_spec(spec_path=spec_path)
         self._parse_header()
         
     def get_scan(self,
@@ -100,6 +108,20 @@ class Study(PvStudy, BaseAnalyzer):
                     study_address=id(self),
                     debug=debug)
     
+    def _fetch_study_ref(self):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            for scan_id in self.avail:
+                analyzer = self.get_scan(scan_id).get_scaninfo(get_analyzer=True)
+                if visu := analyzer.visu_pars:
+                    setattr(self, 'study_ref', visu)
+                    return
+    
+    def _get_subject(self) -> Optional[Parameter]:
+        if not self.contents or 'subject' not in self.contents['files']:
+            return None
+        return self.subject
+    
     def _parse_header(self) -> None:
         """Parses the header information from the study metadata.
 
@@ -107,15 +129,23 @@ class Study(PvStudy, BaseAnalyzer):
         study header attribute. This method handles cases with different versions
         of ParaVision by adjusting the header format accordingly.
         """
-        if not self.contents or 'subject' not in self.contents['files']:
-            self.header = None
-            return
-        subj = self.subject
-        subj_header = getattr(subj, 'header') if subj.is_parameter() else None
-        if title := subj_header['TITLE'] if subj_header else None:
-            self.header = {k.replace("SUBJECT_", ""): v for k, v in subj.parameters.items() if k.startswith("SUBJECT")}
-            self.header['sw_version'] = title.split(',')[-1].strip() if 'ParaVision' in title else "ParaVision < 6"
-    
+        if subj := self._get_subject():
+            subj_header = getattr(subj, 'header') if subj.is_parameter() else {}
+            if subj_header:
+                if title := subj_header['TITLE']:
+                    self.header = OrderedDict(**{k.replace("SUBJECT_", ""): v for k, v in subj.parameters.items() \
+                        if k.startswith("SUBJECT")})
+                    sw_version = self.parse_version(str(title))
+                    if not sw_version:
+                        self._fetch_study_ref()
+                    self.header['sw_version'] = sw_version
+            
+    @staticmethod
+    def parse_version(version_string: str) -> str:
+        version_regex = r'(?<!\d)\b\d+\.\d+(?:\.\d+)?\b(?!.\d)'
+        if version := re.search(version_regex, version_string):
+            return version.group(0) 
+            
     @property
     def avail(self) -> list:
         """List of available scan IDs within the study.
@@ -125,27 +155,53 @@ class Study(PvStudy, BaseAnalyzer):
         """
         return super().avail
 
-    @property
-    def info(self) -> dict:
-        if not hasattr(self, '_info'):
+    def info(self, 
+             scope: Literal['header', 'scans', 'all'] = 'header', 
+             scan_id: Union[int, List[int], None] = None) -> dict:
+        if not self._info:
             self._process_header()
-        # return self._info
-        if not hasattr(self, '_streamed_info'): 
-            self._streamed_info = self._stream_info() 
-        return self._streamed_info
+        if not self._streamed_info: 
+            self._streamed_info = self._stream_info()
+        if scope == 'all':
+            if len(self._streamed_info['scans']) < len(self.avail):
+                self._process_scans(self.avail)
+            return self._streamed_info
+        else:
+            info_obj = self._streamed_info[scope]
+            if scope == 'scans':
+                if not scan_id:
+                    scan_id = self.avail
+                elif isinstance(scan_id, int):
+                    scan_id = [scan_id]
+                scans = {}
+                if sids := [s for s in scan_id if not s in self._streamed_info['scans'].keys()]:
+                    self._process_scans(sids)
+                    self._streamed_info = self._stream_info()
+                for sid in scan_id:
+                    scans[sid] = self._streamed_info['scans'][sid]
+                return scans
+            else:
+                return info_obj
     
     def _stream_info(self):
         stream = copy(self._info.__dict__)
+        stream['header']['AvailScanIDs'] = self.avail
         scans = {}
-        for s in self._info.scans:
-            scans[s.scan_id] = s.header
+        for scan_id, s in self._info.scans.items():
+            scans[scan_id] = s.header
             recos = {}
             for r in s.recos:
                 recos[r.reco_id] = r.header
             if recos:
                 scans[s.scan_id]['recos'] = recos
         stream['scans'] = scans
-        return stream
+        return OrderedDict(**stream)
+    
+    def _import_spec(self, spec_path: Optional[str] = None):
+        if not self._spec:
+            spec_path = spec_path or os.path.join(os.path.dirname(__file__), 'study.yaml')
+            with open(spec_path, 'r') as f:
+                self._spec = yaml.safe_load(f)
     
     def _process_header(self):
         """Compiles comprehensive information about the study, including header details and scans.
@@ -156,26 +212,31 @@ class Study(PvStudy, BaseAnalyzer):
         Returns:
             dict: A dictionary containing structured information about the study, its scans, and reconstructions.
         """
-        spec_path = os.path.join(os.path.dirname(__file__), 'study.yaml')
-        with open(spec_path, 'r') as f:
-            spec = yaml.safe_load(f)
-        self._info = StudyHeader(header=RecipeParser(self, copy(spec)['study']).get(), 
-                                 scans=[])
+        if not self.header:
+            self._fetch_study_ref()
+        self._info = StudyHeader(header=RecipeParser(self, copy(self._spec)['study']).get(), 
+                                 scans={})
+    
+    def _process_scans(self, scan_ids: List[int]):
+        for scan_id in scan_ids:
+            self._info.scans[scan_id] = self._process_scan(scan_id)
+    
+    def _process_scan(self, scan_id: int):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            for scan_id in self.avail:
-                scanobj = self.get_scan(scan_id)
-                scan_spec = copy(spec)['scan']
+            with self.get_scan(scan_id) as scanobj:
+                scan_spec = copy(self._spec)['scan']
                 scaninfo_targets = scanobj.info
                 scan_header = ScanHeader(scan_id=scan_id, 
                                          header=RecipeParser(scaninfo_targets, scan_spec).get(), 
                                          recos=[])
                 for reco_id in scanobj.avail:
                     recoinfo_targets = [scanobj.get_scaninfo(reco_id=reco_id)]
-                    reco_spec = copy(spec)['reco']
+                    reco_spec = copy(self._spec)['reco']
                     parsed_reco = RecipeParser(recoinfo_targets, reco_spec).get()
                     reco_header = RecoHeader(reco_id=reco_id, 
                                              header=parsed_reco) if parsed_reco else None
                     if reco_header:
                         scan_header.recos.append(reco_header)
-                self._info.scans.append(scan_header)
+                return scan_header
+                

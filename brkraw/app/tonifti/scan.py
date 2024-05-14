@@ -28,7 +28,6 @@ class ScanToNifti(Scan, BaseMethods):
         else:
             if len(paths) == 1 and paths[0].is_dir():
                 abspath = paths[0].absolute()
-                print(abspath)
                 if contents := self._is_pvscan(abspath):
                     pvobj = self._construct_pvscan(abspath, contents)                
                 elif contents := self._is_pvreco(abspath):

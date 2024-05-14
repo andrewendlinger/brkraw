@@ -9,9 +9,9 @@ from __future__ import annotations
 from collections import OrderedDict
 from brkraw.api import helper
 from .base import BaseAnalyzer
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
-    from brkraw.api.pvobj import PvScan, PvReco, PvFiles
+    from brkraw.api.pvobj.types import PvObjType
 
 
 class ScanInfoAnalyzer(BaseAnalyzer):
@@ -33,7 +33,7 @@ class ScanInfoAnalyzer(BaseAnalyzer):
         visu_pars (OrderedDict): Visualization parameters extracted for analysis.
     """
     def __init__(self, 
-                 pvobj: Union['PvScan', 'PvReco', 'PvFiles'], 
+                 pvobj: PvObjType, 
                  reco_id:Optional[int] = None, 
                  debug:bool = False):
         """Initialize the ScanInfoAnalyzer with specified parameters and optionally in debug mode.
@@ -45,7 +45,7 @@ class ScanInfoAnalyzer(BaseAnalyzer):
             if self.visu_pars:
                 self._parse_info()
     
-    def _set_pars(self, pvobj: Union['PvScan', 'PvReco', 'PvFiles'], reco_id: Optional[int]):
+    def _set_pars(self, pvobj: PvObjType, reco_id: Optional[int]):
         """Set parameters from the PvObject for internal use."""
         for p in ['acqp', 'method']:
             try:

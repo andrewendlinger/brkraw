@@ -13,3 +13,12 @@ app:
       spec: null
     studyinfo:
       recipe: brkraw-snippets:studyinfo #<repo name>:<recipe name>:<recipe version>
+  bids:
+    - 1
+    - 2
+  viewer:
+    - 1
+    - 2
+  manager:
+    - 1
+    - 2

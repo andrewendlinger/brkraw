@@ -12,9 +12,7 @@ from .base import BaseAnalyzer
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..data import ScanInfo
-    from typing import Union
-    from io import BufferedReader
-    from zipfile import ZipExtFile
+    from brkraw.api.pvobj.types import PvFileBuffer
 
 
 class DataArrayAnalyzer(BaseAnalyzer):
@@ -34,7 +32,7 @@ class DataArrayAnalyzer(BaseAnalyzer):
         shape (list[int]): The dimensions of the data array.
         shape_desc (list[str]): Descriptions of the data array dimensions.
     """
-    def __init__(self, infoobj: 'ScanInfo', fileobj: Union[BufferedReader, ZipExtFile]):
+    def __init__(self, infoobj: 'ScanInfo', fileobj: PvFileBuffer):
         """Initialize the DataArrayAnalyzer with an information object and a file object.
         """
         infoobj = copy(infoobj)

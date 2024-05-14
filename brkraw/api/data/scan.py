@@ -13,13 +13,13 @@ This module is part of the `brkraw` package which aims to provide tools for MRI 
 
 from __future__ import annotations
 import ctypes
-from brkraw.api.pvobj import PvScan, PvReco, PvFiles
 from brkraw.api.pvobj.base import BaseBufferHandler
 from brkraw.api.analyzer import ScanInfoAnalyzer, AffineAnalyzer, DataArrayAnalyzer, BaseAnalyzer
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from typing import Optional, Union
-    from .study import Study
+    from .types import StudyDataType
+    from brkraw.api.pvobj.types import PvObjType
 
 
 class ScanInfo(BaseAnalyzer):
@@ -55,7 +55,7 @@ class Scan(BaseBufferHandler):
         study_address (Optional[int]): Memory address of the study object, defaults to None.
         debug (bool): Flag to enable debug mode, defaults to False.
     """
-    def __init__(self, pvobj: Union['PvScan', 'PvReco', 'PvFiles'],
+    def __init__(self, pvobj: PvObjType,
                  reco_id: Optional[int] = None,
                  study_address: Optional[int] = None,
                  debug: bool = False) -> None:
@@ -73,7 +73,7 @@ class Scan(BaseBufferHandler):
         self.is_debug = debug
         self.set_scaninfo()
         
-    def retrieve_pvobj(self) -> Union['PvScan', 'PvReco', 'PvFiles', None]:
+    def retrieve_pvobj(self) -> Optional[PvObjType]:
         """Retrieves the pvobj from memory using its stored address.
 
         Returns:
@@ -84,7 +84,7 @@ class Scan(BaseBufferHandler):
                                ctypes.py_object).value
         return None
     
-    def retrieve_study(self) -> Optional['Study']:
+    def retrieve_study(self) -> Optional[StudyDataType]:
         """Retrieves the study object from memory using its stored address.
 
         Returns:
@@ -175,7 +175,7 @@ class Scan(BaseBufferHandler):
         return self.pvobj.avail
     
     @property
-    def pvobj(self) -> Union['PvScan', 'PvReco', 'PvFiles']:
+    def pvobj(self) -> PvObjType:
         """Retrieves the pvobj from memory.
 
         Returns:

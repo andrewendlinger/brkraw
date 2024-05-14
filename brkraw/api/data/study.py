@@ -17,7 +17,7 @@ Dependencies:
         Base class providing analytical methods used across different types of data analyses.
     Scan (from .scan): 
         Class representing individual scans within a study, providing detailed data access and manipulation.
-    Recipe (from brkraw.api.helper.recipe): 
+    RecipeParser (from reshipe): 
         Utility class used for applying specified recipes to data objects, enabling structured data extraction and analysis.
 
 This module is utilized in MRI research environments where detailed and structured analysis of photovoltaic data is required.
@@ -86,7 +86,6 @@ class Study(PvStudy, BaseAnalyzer):
         """
         super().__init__(self._resolve(path))
         self._import_spec(spec_path=spec_path)
-        self._parse_header()
         
     def get_scan(self,
                  scan_id: int,
@@ -142,6 +141,7 @@ class Study(PvStudy, BaseAnalyzer):
             
     @staticmethod
     def parse_version(version_string: str) -> str:
+        """Parse """
         version_regex = r'(?<!\d)\b\d+\.\d+(?:\.\d+)?\b(?!.\d)'
         if version := re.search(version_regex, version_string):
             return version.group(0) 
@@ -158,13 +158,13 @@ class Study(PvStudy, BaseAnalyzer):
     def info(self, 
              scope: Literal['header', 'scans', 'all'] = 'header', 
              scan_id: Union[int, List[int], None] = None) -> dict:
-        if not self._info:
+        if not self.header:
+            self._parse_header()
             self._process_header()
-        if not self._streamed_info: 
             self._streamed_info = self._stream_info()
         if scope == 'all':
             if len(self._streamed_info['scans']) < len(self.avail):
-                self._process_scans(self.avail)
+                self._update_stream(self.avail)
             return self._streamed_info
         else:
             info_obj = self._streamed_info[scope]
@@ -175,13 +175,16 @@ class Study(PvStudy, BaseAnalyzer):
                     scan_id = [scan_id]
                 scans = {}
                 if sids := [s for s in scan_id if not s in self._streamed_info['scans'].keys()]:
-                    self._process_scans(sids)
-                    self._streamed_info = self._stream_info()
+                    self._update_stream(sids)
                 for sid in scan_id:
                     scans[sid] = self._streamed_info['scans'][sid]
                 return scans
             else:
                 return info_obj
+    
+    def _update_stream(self, scan_ids):
+        self._process_scans(scan_ids)
+        self._streamed_info = self._stream_info()
     
     def _stream_info(self):
         stream = copy(self._info.__dict__)

@@ -1,8 +1,6 @@
-from brkraw.app.tonifti import StudyToNifti
-
 import os
 import datetime
-
+from brkraw.app.tonifti import StudyToNifti
 
 
 class NamedTuple(object):

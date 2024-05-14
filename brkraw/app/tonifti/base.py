@@ -112,7 +112,10 @@ class BaseMethods(BaseBufferHandler):
                                             reco_id=reco_id,
                                             subj_type=subj_type,
                                             subj_position=subj_position)
-        return BaseMethods._assemble_nifti1image(dataobj, affine)
+        return BaseMethods._assemble_nifti1image(scanobj=scanobj, 
+                                                 dataobj=dataobj, 
+                                                 affine=affine,
+                                                 scale_mode=scale_mode)
         
     @staticmethod
     def _bypass_method_via_plugin(scanobj: 'Scan', 
@@ -130,7 +133,7 @@ class BaseMethods(BaseBufferHandler):
         else:
             warnings.warn("Failed. Given plugin not available, "
                           "please install local plugin or use from available on "
-                          f"remote repository. -> {[p.name for p in config.avail]}",
+                          f"remote repository. -> {[p.name for p in config.avail if p.type == 'tonifti']}",
                           UserWarning)
             return None
     
@@ -180,6 +183,9 @@ class BaseMethods(BaseBufferHandler):
         return [Nifti1Image(dataobj=dataobj[:,:,i,...], affine=aff) for i, aff in enumerate(affine)]
     
     def list_plugin(self):
-        avail_dict = self.config.avail('plugin')
-        return {'local': [s for s in avail_dict['local'] if s.type == 'tonifti'],
-                'remote': [s for s in avail_dict['remote'] if s.type == 'tonifti']}
+        return {'local': [s for s in self.config.installed if s.type == 'tonifti'],
+                'remote': [s for s in self.config.avail if s.type == 'tonifti']}
+        
+    def help_plugin(self, plugin_name: str):
+        plugin_name = self._get_plugin_snippets_by_name(plugin_name)
+        plugin_name.help(drop=['pvobj', 'kwargs'])

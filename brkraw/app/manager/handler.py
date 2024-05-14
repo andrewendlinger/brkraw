@@ -85,7 +85,7 @@ class BackupCacheHandler:
                               os.path.isdir(os.path.join(self._rpath, d)) and 'import' not in d])
         list_of_brk = sorted([d for d in os.listdir(self._apath) if
                               (os.path.isfile(os.path.join(self._apath, d)) and
-                               (d.endswith('zip') or d.endswith('PvDatasets')))])
+                               (d.lower().endswith('zip') or d.lower().endswith('PvDatasets')))])
 
         # parse dataset
         print('\nScanning raw datasets and update cache...')
@@ -120,7 +120,7 @@ class BackupCacheHandler:
                             b.issued = False if self.is_same_as_raw(b.path) else True
                             if b.issued:
                                 if b.garbage:
-                                    if StudyToNifti(arc_path).is_pvdataset:
+                                    if StudyToNifti(arc_path).is_pvstudy:
                                         b.garbage = False
                         # else the backup dataset it still crashed.
                     else:  # the dataset has an issue but not crashed, so check if the issue has been resolved.
@@ -422,7 +422,7 @@ class BackupCacheHandler:
                         else:
                             arc = StudyToNifti(arc_path)
                             raw = StudyToNifti(raw_path)
-                            if arc.is_pvdataset:
+                            if arc.is_pvstudy:
                                 if arc.num_recos != raw.num_recos:
                                     print(' - [{}] is mismatching with the corresponding raw data, '
                                           'removing...'.format(arc_path), file=fobj)

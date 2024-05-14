@@ -8,10 +8,10 @@ config = XnippetManager(package_name=__package__,
                         package__file__=__file__,
                         config_filename='config.yaml')
 
-def main():
-    print(f'Hello, Brkraw {__version__}')
+def parse_app_config(name_):
+    name = name_.split('.')[-1]
+    if name in config.config['app']:
+        return config.config['app'][name]
+    return None
 
-if __name__ == '__main__':
-    main()
-
-__all__ = ['__version__', 'config', 'setup_logging']
+__all__ = ['__version__', 'config', 'setup_logging', 'parse_app_config']

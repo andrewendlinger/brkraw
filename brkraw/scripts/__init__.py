@@ -14,12 +14,13 @@ def main():
         
 @main.command()
 @click.argument('input', type=click.Path(exists=True))
+
 @click.option('-s', '--scan-id', type=int, multiple=True, default=(), help='Accept multiple scan IDs.')
 def info(input):
     """Prints out the information of the internal contents in Bruker Paravision Dataset."""
     from brkraw.api import StudyData
     study = StudyData(input)
-    study.info('all')
+    header = study.info()
     
 main.add_command(tonii)
 main.add_command(viewer_)

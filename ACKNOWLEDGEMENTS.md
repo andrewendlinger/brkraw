@@ -16,7 +16,7 @@ This document recognizes and appreciates the individuals and organizations that 
 - [Joanes Grandjean](https://github.com/grandjeanlab) - Addressed initial PV360 conversion issues and integrated the BrkRaw project into his rodent fMRI standardization efforts, providing valuable opportunities for broader application and impact.
 - [Remi Gau](https://remi-gau.github.io/) - Developed new features, modernized the module, and improved integration with BIDS.
 - [Timothy Ho](https://github.com/timwahoo) - Developed new features focusing on reconstruction and assisted with troubleshooting for preclinical users in the PCI community.
-- [Jérémie Fouquet](https://github.com/jeremie-fouquet) - Improved DTI conversion processes and provided constructive feedback.
+- [Jérémie Fouquet](https://github.com/jeremie-fouquet) - Improved BIDS and DTI conversion processes and provided constructive feedback.
 - [Adam Raikes](https://github.com/araikes) - Enhanced DTI image metadata parsing and conversion.
 
 ## Special Thanks

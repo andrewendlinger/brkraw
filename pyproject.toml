@@ -14,8 +14,8 @@ dependencies = [
     'numpy>=1.18.0',
     'tqdm>=4.45.0',
     'click>=8.1.7',
-    'xnippet', #'xnippet @ git+https://github.com/dvm-shlee/xnippet.git',
-    'reshipe', #'reshipe @ git+https://github.com/dvm-shlee/reshipe.git'
+    'xnippet==0.1.1',
+    'reshipe==0.1.0',
 ]
 description = "Bruker PvDataset Loader"
 license = {text = "GNLv3"}
@@ -36,9 +36,6 @@ keywords = [
 
 [project.urls]
 Homepage = "https://brkraw.github.io"
-
-[tool.hatch.metadata]
-allow-direct-references = true
 
 [project.optional-dependencies]
 all = ["brkraw[tonii]", "brkraw[viewer]"]

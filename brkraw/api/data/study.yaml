@@ -66,7 +66,7 @@ study:
       - header.study_instrument_position
       - entry: header.entry
         position: header.position
-        script: entry.split("_").pop(-1) + "_" + position.split("_").pop(-1)
+        script: entry.replace("First", "").split("_").pop(-1) + "_" + position.split("_").pop(-1)
       - study_ref.VisuSubjectPosition
 
 scan:

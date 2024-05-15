@@ -1,11 +1,7 @@
 import click
 from brkraw.app.tonifti import StudyToNifti, ScanToNifti
 from brkraw.types import KeyValuePairs
-
-def print_help_msg(ctx, param, value):
-    if not value or not any(value):
-        click.echo(ctx.get_help())
-        ctx.exit()
+from .utils import print_help_msg
 
 
 @click.group()
@@ -22,8 +18,8 @@ def tonii(ctx, inputs, scale_mode):
     }
 
 @tonii.command()
-@click.argument('scan_ids', nargs=-1, type=int)
-@click.argument('reco_ids', nargs=-1, type=int)
+@click.option('-s', '--scan-id', multiple=True, type=int, help="Specify one or more scan IDs.")
+@click.option('-r', '--reco-id', multiple=True, type=int, help="Specify reco IDs, must align with scan IDs if provided.")
 @click.option('-p', '--plugin', help="Specify the plugin to use.")
 @click.option('--config', cls=KeyValuePairs, help="Extra configuration in key=value format, multiple can be joined by ','.")
 @click.pass_context

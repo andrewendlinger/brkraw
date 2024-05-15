@@ -13,7 +13,7 @@ import numpy as np
 from copy import copy
 from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
-    from brkraw.api.data.scan import ScanInfo
+    from brkraw.api.data.types import ScanInfoType
 
 
 SLICEORIENT = {
@@ -45,7 +45,7 @@ class AffineAnalyzer(BaseAnalyzer):
         subj_type (str): The type of the subject (e.g., Biped, Quadruped).
         subj_position (str): The position of the subject during the scan.
     """
-    def __init__(self, infoobj: 'ScanInfo'):
+    def __init__(self, infoobj: 'ScanInfoType'):
         """Initialize the AffineAnalyzer with an information object.
         """
         infoobj = copy(infoobj)
@@ -78,7 +78,7 @@ class AffineAnalyzer(BaseAnalyzer):
             affine = self._correct_orientation(self.affine, subj_position, subj_type)
         return affine
             
-    def _calculate_affine(self, infoobj: 'ScanInfo', slicepack_id: Optional[int] = None):
+    def _calculate_affine(self, infoobj: 'ScanInfoType', slicepack_id: Optional[int] = None):
         """Calculate the initial affine matrix based on the imaging data and subject orientation.
         """
         sidx = infoobj.orientation['orientation_desc'][slicepack_id].index(2) \

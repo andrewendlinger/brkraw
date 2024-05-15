@@ -1,5 +1,6 @@
 from typing import Type
-from .scan import Scan, Study, ScanInfo
+from .scan import Scan, ScanInfo
+from .study import Study
 
 ScanDataType = Type[Scan]
 StudyDataType = Type[Study]

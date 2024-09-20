@@ -307,7 +307,7 @@ class BaseMethods(BaseBufferHandler):
                                     "Please check the dataset and ensure the file is in the expected location.")
         
     @staticmethod
-    def _is_binary(fileobj: PvFileBuffer, bytes: int = 512):
+    def _is_binary(fileobj: PvFileBuffer, bytesize: int = 512):
         """Determine if a file is binary by reading a block of data.
 
         Args:
@@ -317,7 +317,7 @@ class BaseMethods(BaseBufferHandler):
         Returns:
             bool: True if the file contains binary data, otherwise False.
         """
-        block = fileobj.read(bytes)
+        block = fileobj.read(bytesize)
         fileobj.seek(0)
         
         # Check for non-printable characters (ASCII values outside 32-126, except for common characters like newline)

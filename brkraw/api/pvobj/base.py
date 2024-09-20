@@ -217,6 +217,8 @@ class BaseMethods(BaseBufferHandler):
                 if self._is_binary(fileobj):
                     return fileobj
                 string_list = fileobj.read().decode('UTF-8').split('\n')
+                if not any(string_list):
+                    raise ValueError(f"The file '{key}' is empty or not compatible")
                 fileobj.close()
                 par = Parameter(string_list, 
                                 name=key, scan_id=self._scan_id, reco_id=self._reco_id)
@@ -317,4 +319,9 @@ class BaseMethods(BaseBufferHandler):
         """
         block = fileobj.read(bytes)
         fileobj.seek(0)
-        return b'\x00' in block
+        
+        # Check for non-printable characters (ASCII values outside 32-126, except for common characters like newline)
+        text_chars = bytes([7, 8, 9, 10, 12, 13] + list(range(32, 127)))
+        is_binary = bool(block.translate(None, text_chars))
+        # return b'\x00' in block
+        return is_binary

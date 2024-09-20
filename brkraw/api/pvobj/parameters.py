@@ -230,3 +230,22 @@ class Parameter:
         """True if data successfully loaded"""
         return True if self.header else False
         
+    def search_parameters(self, keyword, match_type='contains'):
+        """Return all matched Parameter keys
+        mode (str): within 'contains, endswith, startswith, regex'
+        """
+        parameters = OrderedDict()
+        for k in self._parameters.keys():
+            if match_type == 'contains':
+                if keyword.lower() in k.lower():
+                    parameters[k] = self._parameters[k]
+            elif match_type == 'startwith':
+                if k.lower().startswith(keyword.lower()):
+                    parameters[k] = self._parameters[k]
+            elif match_type == 'endswith':
+                if k.lower().endswith(keyword.lower()):
+                    parameters[k] = self._parameters[k]
+            else:
+                if re.findall(keyword, k):
+                    parameters[k] = self._parameters[k]
+        return parameters

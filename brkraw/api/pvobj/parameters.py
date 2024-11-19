@@ -169,16 +169,37 @@ class Parameter:
         """
         return self.parameters[key]
     
-    def __getattr__(self, key):
-        """Allows attribute-like access to parameters.
+    def __getattr__(self, key: str):
+        """Provides attribute-like access to the `parameters` dictionary.
+
+        This method is called when an attribute lookup fails. It checks the
+        `parameters` dictionary for the requested key and returns the associated
+        value if found.
+
+        Note:
+            If the key is not found in `parameters`, an `AttributeError` is raised
+            instead of a `KeyError` because `getattr()` is designed to handle
+            `AttributeError` when an attribute is not found.
 
         Args:
-            key (str): The key for the desired parameter.
+            key (str): The key to look up in the `parameters` dictionary.
 
         Returns:
-            The value associated with the key in the parameters dictionary.
+            Any: The value associated with the given key in `parameters`.
+
+        Raises:
+            AttributeError: If the key is not present in `parameters` and cannot
+                            be accessed as an attribute.
         """
-        return self.parameters[key]
+        # Attempt to retrieve the value from the parameters dictionary.
+        if hasattr(self, "parameters") and isinstance(self.parameters, dict):
+            if key in self.parameters:
+                return self.parameters[key]
+
+        raise AttributeError(
+            f"'{type(self).__name__}' object has no attribute '{key}' "
+            f"and the key '{key}' is not present in the `parameters` dictionary."
+        )
     
     def __repr__(self):
         """Provide a string representation of the Parameter object for debugging and logging.

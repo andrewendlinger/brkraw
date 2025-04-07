@@ -1,32 +1,37 @@
 """Base functionality for handling buffer and method operations in pvobj.
 
 This module defines core classes that offer foundational utilities for managing and processing raw datasets.
-The classes provide methods for handling file operations, such as opening and closing file buffers, fetching 
+The classes provide methods for handling file operations, such as opening and closing file buffers, fetching
 directory structures, and more, all while using an object-oriented approach to maintain and access these datasets.
 
 Classes:
     BaseBufferHandler: Manages file buffer operations, ensuring proper opening, closing, and context management of file streams.
-    BaseMethods: Extends BaseBufferHandler to include various file and directory handling methods necessary 
+    BaseMethods: Extends BaseBufferHandler to include various file and directory handling methods necessary
     for accessing and managing dataset contents.
 """
 
 from __future__ import annotations
+
 import os
-from zipfile import ZipFile
 from collections import OrderedDict, defaultdict
 from pathlib import Path
-from .parameters import Parameter
-from xnippet.formatter import PathFormatter
 from typing import TYPE_CHECKING
+from zipfile import ZipFile
+
+from xnippet.formatter import PathFormatter
+
+from .parameters import Parameter
+
 if TYPE_CHECKING:
-    from typing import Optional, List
+    from typing import List, Optional
+
     from .types import PvFileBuffer
 
 
 class BaseBufferHandler(PathFormatter):
     """Handles buffer management for file operations, ensuring all file streams are properly managed.
 
-    This class provides context management for file buffers, allowing for easy and safe opening and closing 
+    This class provides context management for file buffers, allowing for easy and safe opening and closing
     of file streams. It ensures that all buffers are closed when no longer needed, preventing resource leakage.
 
     Attributes:
@@ -39,7 +44,7 @@ class BaseBufferHandler(PathFormatter):
             for b in self._buffers:
                 if not b.closed:
                     b.close()
-    
+
     def __enter__(self):
         """Enters the runtime context related to this object."""
         return self
@@ -53,8 +58,8 @@ class BaseBufferHandler(PathFormatter):
 class BaseMethods(BaseBufferHandler):
     """Provides utility methods for handling files and directories within PvObjects.
 
-    This class offers methods to fetch directory structures, handle zip file contents, and open files either 
-    as file objects or as readable strings. It also provides a property to access the contents of directories 
+    This class offers methods to fetch directory structures, handle zip file contents, and open files either
+    as file objects or as readable strings. It also provides a property to access the contents of directories
     and zip files, tailored to the needs of managing Bruker raw datasets.
 
     Attributes:
@@ -69,7 +74,7 @@ class BaseMethods(BaseBufferHandler):
     _path: 'Path' = None
     _rootpath: 'Path' = None
     _contents: 'Path' = None
-    
+
     def isinstance(self, name: str):
         """Check if the class name matches the provided string.
 
@@ -82,7 +87,7 @@ class BaseMethods(BaseBufferHandler):
             bool: True if the given name matches the instance's class name, otherwise False.
         """
         return self.__class__.__name__ == name
-    
+
     @staticmethod
     def _fetch_dir(path: 'Path'):
         """Searches for directories and files in a given directory and returns the directory structure.
@@ -103,10 +108,10 @@ class BaseMethods(BaseBufferHandler):
             normalized_dirpath = os.path.normpath(dirpath)
             relative_path = os.path.relpath(normalized_dirpath, abspath)
             file_sizes = [os.path.getsize(os.path.join(dirpath, f)) for f in filenames]
-            contents[relative_path] = {'dirs': dirnames, 'files': filenames, 
+            contents[relative_path] = {'dirs': dirnames, 'files': filenames,
                                        'file_indexes': [], 'file_sizes': file_sizes}
         return contents
-    
+
     @staticmethod
     def _fetch_zip(path: 'Path'):
         """Searches for files in a zip file and returns the directory structure and file information.
@@ -134,7 +139,7 @@ class BaseMethods(BaseBufferHandler):
                         if dirname:
                             contents[dirpath]['dirs'].add(dirname)
         return contents
-    
+
     def _open_as_fileobject(self, key: str):
         """Opens a file object for the given key.
 
@@ -195,7 +200,7 @@ class BaseMethods(BaseBufferHandler):
             KeyError: If the key is not found.
         """
         return self.__getattr__(key)
-        
+
     def __getattr__(self, key: str):
         """
         Get attribute by name.
@@ -210,7 +215,7 @@ class BaseMethods(BaseBufferHandler):
             obj = Dataset()
             param = obj.some_key  # Returns a Parameter object or file object.
         """
-        key = key[1:] if key.startswith('_') else key 
+        key = key[1:] if key.startswith('_') else key
         if self.contents:
             if file := [f for f in self.contents['files'] if (f == key or f.replace('.', '_') == key)]:
                 fileobj = self._open_as_fileobject(file.pop())
@@ -220,7 +225,7 @@ class BaseMethods(BaseBufferHandler):
                 if not any(string_list):
                     raise ValueError(f"The file '{key}' is empty or not compatible")
                 fileobj.close()
-                par = Parameter(string_list, 
+                par = Parameter(string_list,
                                 name=key, scan_id=self._scan_id, reco_id=self._reco_id)
                 return par if par.is_parameter() else string_list
             raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{key}'")
@@ -267,7 +272,7 @@ class BaseMethods(BaseBufferHandler):
                 return getattr(pvobj, fid)
         raise FileNotFoundError(f"The required file '{' or '.join(fid_files)}' does not exist. "
                                 "Please check the dataset and ensure the file is in the expected location.")
-    
+
     def get_2dseq(self, scan_id:Optional[int] = None, reco_id:Optional[int] = None):
         """Retrieve the '2dseq' file from the dataset for a specific scan and reconstruction.
 
@@ -305,7 +310,7 @@ class BaseMethods(BaseBufferHandler):
         except AttributeError:
             raise FileNotFoundError("The required file '2dseq' does not exist. "
                                     "Please check the dataset and ensure the file is in the expected location.")
-        
+
     @staticmethod
     def _is_binary(fileobj: PvFileBuffer, bytesize: int = 512):
         """Determine if a file is binary by reading a block of data.
@@ -319,7 +324,7 @@ class BaseMethods(BaseBufferHandler):
         """
         block = fileobj.read(bytesize)
         fileobj.seek(0)
-        
+
         # Check for non-printable characters (ASCII values outside 32-126, except for common characters like newline)
         text_chars = bytes([7, 8, 9, 10, 12, 13] + list(range(32, 127)))
         is_binary = bool(block.translate(None, text_chars))

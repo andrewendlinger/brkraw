@@ -1,38 +1,42 @@
 """Provides functionality for parsing and managing parameter metadata within Paravision datasets.
 
-This module includes the `Parameter` class, which extends the functionalities of a generic `Parser` class. 
-It specifically handles the extraction and management of parameter data and header information from strings 
-that represent parameter dictionaries in Paravision datasets. 
+This module includes the `Parameter` class, which extends the functionalities of a generic `Parser` class.
+It specifically handles the extraction and management of parameter data and header information from strings
+that represent parameter dictionaries in Paravision datasets.
 These capabilities are critical for accessing and manipulating the underlying data in a structured and interpretable format.
 
 Classes:
-    Parameter: A class designed to parse and manage parameter dictionaries, providing access to parameters and headers, 
+    Parameter: A class designed to parse and manage parameter dictionaries, providing access to parameters and headers,
                processing content data, and setting parameter values based on input data.
 
 Dependencies:
     re: Regular expression operations for parsing and processing text.
-    numpy: Provides support for large, multi-dimensional arrays and matrices, 
+    numpy: Provides support for large, multi-dimensional arrays and matrices,
            along with a large collection of high-level mathematical functions to operate on these arrays.
-    OrderedDict: A dictionary subclass that remembers the order in which its contents are added, 
+    OrderedDict: A dictionary subclass that remembers the order in which its contents are added,
                  used for maintaining an ordered set of parameters.
 """
 
 from __future__ import annotations
+
 import re
-import numpy as np
 from collections import OrderedDict
-from .parser import Parser, ptrn_comment, PARAMETER, HEADER
 from typing import TYPE_CHECKING
+
+import numpy as np
+
+from .parser import HEADER, PARAMETER, Parser, ptrn_comment
+
 if TYPE_CHECKING:
-    from typing import Optional
-    from typing import List
+    from typing import List, Optional
+
     from numpy.typing import NDArray
 
 
 class Parameter:
     """Handles the parsing and management of parameter data for Paravision experiments.
 
-    This class extends the Parser class, utilizing its functionalities to interpret a list of string 
+    This class extends the Parser class, utilizing its functionalities to interpret a list of string
     representations of parameter dictionaries, manage parameter and header information, and process the contents of the data.
 
     Args:
@@ -47,11 +51,14 @@ class Parameter:
         _name (str): Name of the parser object.
         _repr_items (List[str]): List of string representations for object description.
     """
-    def __init__(self, 
-                 stringlist: List[str], 
-                 name: str, 
-                 scan_id: Optional[int] = None, 
-                 reco_id: Optional[int] = None):
+
+    def __init__(
+        self,
+        stringlist: List[str],
+        name: str,
+        scan_id: Optional[int] = None,
+        reco_id: Optional[int] = None,
+    ):
         """
         Initialize the Parameter object with the given stringlist, name, scan_id, and reco_id.
 
@@ -71,9 +78,9 @@ class Parameter:
         self._name = name
         self._repr_items = []
         if scan_id:
-            self._repr_items.append(f'scan_id={scan_id}')
+            self._repr_items.append(f"scan_id={scan_id}")
         if reco_id:
-            self._repr_items.append(f'reco_id={reco_id}')
+            self._repr_items.append(f"reco_id={reco_id}")
         self._set_param(*Parser.load_param(stringlist))
 
     @property
@@ -83,8 +90,8 @@ class Parameter:
         Returns:
             str: A capitalized version of the name attribute.
         """
-        if '_' in self._name:
-            return ''.join([s.capitalize() for s in self._name.split('_')])
+        if "_" in self._name:
+            return "".join([s.capitalize() for s in self._name.split("_")])
         return self._name.capitalize()
 
     @property
@@ -105,12 +112,9 @@ class Parameter:
         """
         return self._header
 
-    def _process_contents(self, 
-                          contents: List[str], 
-                          addr: int, 
-                          addr_diff: NDArray, 
-                          index: int, 
-                          value: str):
+    def _process_contents(
+        self, contents: List[str], addr: int, addr_diff: NDArray, index: int, value: str
+    ):
         """Process the data contents based on parameter addresses and differences.
 
         Args:
@@ -124,15 +128,16 @@ class Parameter:
             tuple: A tuple containing the processed data as a string and its shape or format as int.
         """
         if addr_diff[index] > 1:
-            c_lines = contents[(addr + 1):(addr + addr_diff[index])]
-            data = " ".join([line.strip() for line in c_lines if not re.match(ptrn_comment, line)])
+            c_lines = contents[(addr + 1) : (addr + addr_diff[index])]
+            data = " ".join(
+                [line.strip() for line in c_lines if not re.match(ptrn_comment, line)]
+            )
             return (data, value) if data else (Parser.convert_string_to(value), -1)
         return Parser.convert_string_to(value), -1
 
-    def _set_param(self, 
-                   params: List[tuple], 
-                   param_addr: List[int], 
-                   contents: List[str]):
+    def _set_param(
+        self, params: List[tuple], param_addr: List[int], contents: List[str]
+    ):
         """Initialize parameters and headers from parsed data.
 
         Args:
@@ -150,7 +155,9 @@ class Parameter:
         self._parameters = OrderedDict()
         for index, addr in enumerate(param_addr[:-1]):
             dtype, key, value = params[addr]
-            data, shape = self._process_contents(contents, addr, addr_diff, index, value)
+            data, shape = self._process_contents(
+                contents, addr, addr_diff, index, value
+            )
             if dtype is PARAMETER:
                 self._parameters[key] = Parser.convert_data_to(data, shape)
             elif dtype is HEADER:
@@ -168,18 +175,37 @@ class Parameter:
             The value associated with the key in the parameters dictionary.
         """
         return self.parameters[key]
-    
-    def __getattr__(self, key):
-        """Allows attribute-like access to parameters.
+
+    def __getattr__(self, key: str):
+        """Provides attribute-like access to the `parameters` dictionary.
+
+        This method is called when an attribute lookup fails. It checks the
+        `parameters` dictionary for the requested key and returns the associated
+        value if found.
+
+        Note:
+            If the key is not found in `parameters`, an `AttributeError` is raised
+            instead of a `KeyError` for consistency. E.g. `getattr()` is only
+            designed to handle `AttributeError` failures.
 
         Args:
-            key (str): The key for the desired parameter.
+            key (str): The key to look up in the `parameters` dictionary.
 
         Returns:
-            The value associated with the key in the parameters dictionary.
+            Any: The value associated with the given key in `parameters`.
+
+        Raises:
+            AttributeError: If the key is not present in `parameters` and cannot
+                            be accessed as an attribute.
         """
-        return self.parameters[key]
-    
+        if key in self.parameters:
+            return self.parameters[key]
+
+        raise AttributeError(
+            f"'{type(self).__name__}' object has no attribute '{key}' "
+            f"and the key '{key}' is not present in the `parameters` dictionary."
+        )
+
     def __repr__(self):
         """Provide a string representation of the Parameter object for debugging and logging.
 
@@ -195,7 +221,7 @@ class Parameter:
             KeysView: A view of the keys in the parameter dictionary.
         """
         return self.parameters.keys()
-    
+
     def values(self):
         """Get the values of the parameters dictionary.
 
@@ -203,7 +229,7 @@ class Parameter:
             ValuesView: A view of the values in the parameter dictionary.
         """
         return self.parameters.values()
-    
+
     def items(self):
         """Get the key and value pairs of the parameters dictionary.
 
@@ -211,7 +237,7 @@ class Parameter:
             ItemView: A view of the values in the parameter dictionary.
         """
         return self.parameters.items()
-    
+
     def get(self, key: str, default=None):
         """Get the value of a parameter by key, returning default if the key is not found.
 
@@ -225,24 +251,24 @@ class Parameter:
             return self.parameters[key]
         else:
             return default
-        
+
     def is_parameter(self):
         """True if data successfully loaded"""
         return True if self.header else False
-        
-    def search_parameters(self, keyword, match_type='contains'):
+
+    def search_parameters(self, keyword, match_type="contains"):
         """Return all matched Parameter keys
         mode (str): within 'contains, endswith, startswith, regex'
         """
         parameters = OrderedDict()
         for k in self._parameters.keys():
-            if match_type == 'contains':
+            if match_type == "contains":
                 if keyword.lower() in k.lower():
                     parameters[k] = self._parameters[k]
-            elif match_type == 'startwith':
+            elif match_type == "startwith":
                 if k.lower().startswith(keyword.lower()):
                     parameters[k] = self._parameters[k]
-            elif match_type == 'endswith':
+            elif match_type == "endswith":
                 if k.lower().endswith(keyword.lower()):
                     parameters[k] = self._parameters[k]
             else:

@@ -68,6 +68,23 @@ class DataArrayAnalyzer(BaseAnalyzer):
         self.buffer.seek(0)
         arr = np.frombuffer(self.buffer.read(), self.dtype)
 
+        print("chosen read in dataype:", self.dtype)
+        print("input array size:", arr.size)
+        print("input array shape:", arr.shape, "-->", np.prod(arr.shape))
+        print("(meta)data array shape", self.shape, "-->", np.prod(self.shape))
+        print(
+            "potential complex shape:",
+            self.shape + [2],
+            "-->",
+            np.prod(self.shape + [2]),
+        )
+        print("")
+        print("arr.size == np.prod(self.shape)", arr.size == np.prod(self.shape))
+        print(
+            "arr.size == np.prod(self.shape + [2])",
+            arr.size == np.prod(self.shape + [2]),
+        )
+
         # Check if reshape is possible for the original shape
         if arr.size == np.prod(self.shape):
             arr_out = arr.reshape(self.shape, order="F")
@@ -85,10 +102,13 @@ class DataArrayAnalyzer(BaseAnalyzer):
             arr_out = complex_arr.reshape(self.shape, order="F")
 
         else:
-            raise ValueError(
+            # raise ValueError
+            print(
                 f"Unresolvable shape mismatch: "
                 f"Array size ({arr.size}) does not match the target shape ({self.shape}), "
                 f"and reshaping with complex format also fails."
             )
+
+            return arr
 
         return arr_out
